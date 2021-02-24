@@ -12,10 +12,12 @@ class App : Application() {
     }
 
     fun getUserPreferences(): SharedPreferences {
-        return applicationContext.getSharedPreferences("user", Context.MODE_PRIVATE)
+        return applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
 
     companion object {
+        private const val PREFERENCES_NAME = "user_profile"
+
         lateinit var instance: App
             private set
     }

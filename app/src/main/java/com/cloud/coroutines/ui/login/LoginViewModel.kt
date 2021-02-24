@@ -7,6 +7,8 @@ import com.cloud.coroutines.data.LoginRepository
 import com.cloud.coroutines.data.Result
 
 import com.cloud.coroutines.R
+import com.cloud.coroutines.data.error
+import com.cloud.coroutines.data.success
 import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
@@ -15,23 +17,24 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         // can be launched in a separate asynchronous job
         val result = loginRepository.login(username, password)
         Log.e("LoginViewModel", Thread.currentThread().name)
-        result.run {
-            onSuccess {
-                emit(LoginResult(success = LoggedInUserView(displayName = it?.username.toString())))
-            }
-            onError {
-                emit(LoginResult(error = it))
-            }
+        result.success {
+            val loginResult = LoginResult(success = LoggedInUserView(displayName = it?.username.toString()))
+            emit(loginResult)
+        }.error {
+            emit(LoginResult(error = it))
         }
     }
 
     fun loginDataChanged(username: String, password: String) = liveData {
         if (!isUserNameValid(username)) {
-            emit(LoginFormState(usernameError = R.string.invalid_username))
+            val uiState = LoginFormState(usernameError = R.string.invalid_username)
+            emit(uiState)
         } else if (!isPasswordValid(password)) {
-            emit(LoginFormState(passwordError = R.string.invalid_password))
+            val uiState = LoginFormState(passwordError = R.string.invalid_password)
+            emit(uiState)
         } else {
-            emit(LoginFormState(isDataValid = true))
+            val uiState = LoginFormState(isDataValid = true)
+            emit(uiState)
         }
     }
 

@@ -29,13 +29,13 @@ sealed class ApiResult<T> {
     companion object {
         const val SUCCESS_CODE = 0
 
-        fun <T> create(throwable: Throwable): ApiResult<T> {
+        fun <T> failure(throwable: Throwable): ApiResult<T> {
             // 网络异常转换成业务提示
             val errorMsg = ErrorMsgFactory.create(throwable = throwable)
             return ErrorResult(errorMsg.code, errorMsg.message)
         }
 
-        fun <T> create(response: ApiResponse<T>): ApiResult<T> {
+        fun <T> success(response: ApiResponse<T>): ApiResult<T> {
             return if (response.succeeded) {
                 // Tips 这里可以根据Code发送EventBus
                 SuccessResult(response.data, response.errorCode, response.errorMsg)

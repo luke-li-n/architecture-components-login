@@ -14,10 +14,8 @@ class ViewModelFactory : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-
-            val service = ApiService.create()
             return LoginViewModel(
-                loginRepository = Injection.provideDataRepository()
+                    loginRepository = Injection.provideDataRepository()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

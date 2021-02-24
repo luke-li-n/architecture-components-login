@@ -17,9 +17,9 @@ class LoginDataSource(
     suspend fun login(username: String, password: String): ApiResult<LoggedInUser> {
         return try {
             val response = service.login(username = username, password = password)
-            ApiResult.create(response)
-        } catch (e: Throwable) {
-            ApiResult.create(e)
+            ApiResult.success(response)
+        } catch (throwable: Throwable) {
+            ApiResult.failure(throwable)
         }
     }
 
