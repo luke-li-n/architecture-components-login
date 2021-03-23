@@ -2,41 +2,43 @@ package com.cloud.coroutines.data
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.cloud.coroutines.data.model.LoggedInUser
-import com.cloud.coroutines.network.ApiResult
+import com.cloud.coroutines.data.model.User
 import com.cloud.coroutines.network.ApiService
+import com.cloud.coroutines.network.ErrorMsgFactory
+import com.cloud.coroutines.network.safeApiCall
 
 /**
  * Class that handles authentication w/ login credentials and retrieves user information.
  */
 class LoginDataSource(
-    private val service: ApiService,
-    private val preferences: SharedPreferences
+        private val service: ApiService,
+        private val preferences: SharedPreferences
 ) {
 
-    suspend fun login(username: String, password: String): ApiResult<LoggedInUser> {
-        return try {
-            val response = service.login(username = username, password = password)
-            ApiResult.success(response)
-        } catch (throwable: Throwable) {
-            ApiResult.failure(throwable)
-        }
+    suspend fun login(username: String, password: String) = safeApiCall {
+        service.login(username = username, password = password)
     }
 
-    suspend fun loginTest(username: String, password: String): Result<LoggedInUser> {
+
+    suspend fun logout() = safeApiCall {
+        service.logout()
+    }
+
+    suspend fun loginTest(username: String, password: String): Result<User> {
         return try {
             val response = service.login(username = username, password = password)
             if (response.succeeded) {
                 Result.Success(response.data)
             } else {
-                Result.Error(response.errorMsg)
+                Result.Error(response.errorCode, response.errorMsg)
             }
         } catch (e: Throwable) {
-            Result.Error("Network request Cause Exception!")
+            val errorMsg = ErrorMsgFactory.create(e)
+            Result.Error(errorMsg.code, errorMsg.message)
         }
     }
 
-    fun saveUser(user: LoggedInUser) {
+    fun saveUser(user: User) {
         preferences.edit {
             putInt(UserContract.ID, user.id)
             putString(UserContract.EMAIL, user.email)
@@ -45,9 +47,9 @@ class LoginDataSource(
         }
     }
 
-    fun loadUser(): LoggedInUser? {
+    fun loadUser(): User? {
         if (preferences.all.isEmpty()) return null
-        val user = LoggedInUser()
+        val user = User()
         user.id = preferences.getInt(UserContract.ID, 0)
         user.email = preferences.getString(UserContract.EMAIL, "").toString()
         user.nickname = preferences.getString(UserContract.NICK_NAME, "").toString()
@@ -55,13 +57,6 @@ class LoginDataSource(
         return user
     }
 
-    suspend fun logout() {
-        try {
-            service.logout()
-        } catch (e: Throwable) {
-            Result.Error("Network request Cause Exception!")
-        }
-    }
 
     object UserContract {
         const val ID = "id"

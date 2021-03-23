@@ -2,7 +2,7 @@ package com.cloud.coroutines.network
 
 import com.cloud.coroutines.App
 import com.cloud.coroutines.BuildConfig
-import com.cloud.coroutines.data.model.LoggedInUser
+import com.cloud.coroutines.data.model.User
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
@@ -21,7 +21,7 @@ interface ApiService {
     suspend fun login(
         @Field("username") username: String,
         @Field("password") password: String
-    ): ApiResponse<LoggedInUser>
+    ): ApiResponse<User>
 
     @GET("user/logout/json")
     suspend fun logout(): ApiResponse<Any>

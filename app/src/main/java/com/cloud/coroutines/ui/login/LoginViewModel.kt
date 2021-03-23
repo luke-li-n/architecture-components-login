@@ -2,14 +2,12 @@ package com.cloud.coroutines.ui.login
 
 import android.util.Log
 import android.util.Patterns
-import androidx.lifecycle.*
-import com.cloud.coroutines.data.LoginRepository
-import com.cloud.coroutines.data.Result
-
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import com.cloud.coroutines.R
+import com.cloud.coroutines.data.LoginRepository
 import com.cloud.coroutines.data.error
 import com.cloud.coroutines.data.success
-import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 

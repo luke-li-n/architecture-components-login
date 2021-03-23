@@ -1,35 +1,29 @@
 package com.cloud.coroutines.network
 
+import android.nfc.FormatException
+import org.json.JSONException
 import retrofit2.HttpException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import java.net.UnknownServiceException
+import java.text.ParseException
 import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 
 enum class ErrorMsg(val code: Int, val message: String) {
-    /**
-     * 系统内部错误
-     */
-    HTTP_SERVER_ERROR(10001, "系统内部错误"),
-    HTTP_REQUEST_PARAM_ERROR(10002, "请求参数缺失或无效"),
-    HTTP_INVALID_AUTH(10003, "认证信息无效或已过期"),
-    HTTP_ACCESS_DENIED(10004, "无权限操作"),
-    HTTP_REQUEST_INVALID(10005, "错误的请求"),
-    HTTP_GET_TOKEN_ERROR(20000, "获取 IM Token 失败"),
-    HTTP_SEND_CODE_OVER_FREQUENCY(20001, "发送短信请求过于频繁"),
-    HTTP_SEND_CODE_FAILED(20002, "短信发送失败"),
-    HTTP_SEND_CODE_INVALID_PHONE_NUMBER(20003, "手机号无效"),
-    HTTP_CODE_NOT_SEND(20004, "短信验证码尚未发送"),
-    HTTP_CODE_INVALID(20005, "短信验证码无效"),
-    HTTP_CODE_EMPTY(20006, "验证码不能为空"),
-    VERSION_EXIST(40000, "版本已存在"),
-    VERSION_NO_EXIST(40001, "版本不存在"),
-    NO_NEW_VERSION(40002, "没有新版本"),
-    UNKNOWN_ERROR(40000, "未知错误")
+    UNAUTHORIZED(401, "未授权的请求"),//  未授权的请求
+    FORBIDDEN(403, "禁止访问"),//禁止访问
+    NOT_FOUND(404, "服务器地址未找到"),//服务器地址未找到
+    REQUEST_TIMEOUT(408, "请求超时"),//请求超时
+    INTERNAL_SERVER_ERROR(500, "系统内部错误"),//服务器出错
+    BAD_GATEWAY(502, "无效的请求"),//无效的请求
+    SERVICE_UNAVAILABLE(503, "服务器出错"),//服务器不可用
+    GATEWAY_TIMEOUT(504, "网络超时"),//网关响应超时
+    UNKNOWN_ERROR(1000, "未知错误"),
+    PARSE_ERROR(4000, "解析错误"),
+    SSL_ERROR(5000, "证书错误")
 }
 
-@Suppress("unused")
 interface ErrorMsgFactory {
     companion object {
         /**
@@ -45,28 +39,38 @@ interface ErrorMsgFactory {
         }
 
         fun create(throwable: Throwable?): ErrorMsg {
-            return when (throwable) {
-                is HttpException -> {
-                    ErrorMsg.HTTP_ACCESS_DENIED
+            return if (throwable is HttpException) {
+                when (throwable.code()) {
+                    ErrorMsg.UNAUTHORIZED.code -> ErrorMsg.UNAUTHORIZED
+                    ErrorMsg.FORBIDDEN.code -> ErrorMsg.FORBIDDEN
+                    ErrorMsg.NOT_FOUND.code -> ErrorMsg.NOT_FOUND
+                    ErrorMsg.REQUEST_TIMEOUT.code -> ErrorMsg.REQUEST_TIMEOUT
+                    ErrorMsg.GATEWAY_TIMEOUT.code -> ErrorMsg.GATEWAY_TIMEOUT
+                    ErrorMsg.INTERNAL_SERVER_ERROR.code -> ErrorMsg.INTERNAL_SERVER_ERROR
+                    ErrorMsg.BAD_GATEWAY.code -> ErrorMsg.BAD_GATEWAY
+                    ErrorMsg.SERVICE_UNAVAILABLE.code -> ErrorMsg.BAD_GATEWAY
+                    else -> {
+                        ErrorMsg.UNKNOWN_ERROR
+                    }
                 }
-                is UnknownHostException -> {
-                    ErrorMsg.HTTP_ACCESS_DENIED
-                }
-                is UnknownServiceException -> {
-                    ErrorMsg.HTTP_ACCESS_DENIED
-                }
-                is SocketTimeoutException -> {
-                    ErrorMsg.HTTP_ACCESS_DENIED
-                }
-                is ConnectException -> {
-                    ErrorMsg.HTTP_ACCESS_DENIED
-                }
-                is SSLHandshakeException -> {
-                    ErrorMsg.HTTP_ACCESS_DENIED
-                }
-                else -> {
-                    ErrorMsg.UNKNOWN_ERROR
-                }
+            } else if (throwable is JSONException || throwable is ParseException) {
+                ErrorMsg.PARSE_ERROR
+            } else if (throwable is ConnectException) {
+                ErrorMsg.GATEWAY_TIMEOUT
+            } else if (throwable is SSLPeerUnverifiedException || throwable is SSLHandshakeException) {
+                ErrorMsg.SSL_ERROR
+            } else if (throwable is SocketTimeoutException) {
+                ErrorMsg.REQUEST_TIMEOUT
+            } else if (throwable is ClassCastException) {
+                ErrorMsg.PARSE_ERROR
+            } else if (throwable is NullPointerException) {
+                ErrorMsg.PARSE_ERROR
+            } else if (throwable is FormatException) {
+                ErrorMsg.PARSE_ERROR
+            } else if (throwable is UnknownHostException) {
+                ErrorMsg.NOT_FOUND
+            } else {
+                ErrorMsg.UNKNOWN_ERROR
             }
         }
     }
