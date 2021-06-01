@@ -11,14 +11,13 @@ import com.cloud.coroutines.network.safeApiCall
  * Class that handles authentication w/ login credentials and retrieves user information.
  */
 class LoginDataSource(
-        private val service: ApiService,
-        private val preferences: SharedPreferences
+    private val service: ApiService,
+    private val preferences: SharedPreferences
 ) {
 
     suspend fun login(username: String, password: String) = safeApiCall {
         service.login(username = username, password = password)
     }
-
 
     suspend fun logout() = safeApiCall {
         service.logout()
@@ -49,14 +48,13 @@ class LoginDataSource(
 
     fun loadUser(): User? {
         if (preferences.all.isEmpty()) return null
-        val user = User()
-        user.id = preferences.getInt(UserContract.ID, 0)
-        user.email = preferences.getString(UserContract.EMAIL, "").toString()
-        user.nickname = preferences.getString(UserContract.NICK_NAME, "").toString()
-        user.username = preferences.getString(UserContract.USER_NAME, "").toString()
-        return user
+        return User().apply {
+            id = preferences.getInt(UserContract.ID, 0)
+            email = preferences.getString(UserContract.EMAIL, "").toString()
+            nickname = preferences.getString(UserContract.NICK_NAME, "").toString()
+            username = preferences.getString(UserContract.USER_NAME, "").toString()
+        }
     }
-
 
     object UserContract {
         const val ID = "id"

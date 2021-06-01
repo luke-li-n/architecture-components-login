@@ -1,6 +1,7 @@
 package com.cloud.coroutines.network
 
 import com.cloud.coroutines.data.Result
+
 /**
  * 在try/catch中封装一个[suspend]的API调用
  * 把返回结果包装到[Result]对象中
