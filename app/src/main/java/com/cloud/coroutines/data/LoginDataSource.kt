@@ -27,7 +27,7 @@ class LoginDataSource(
     suspend fun loginTest(username: String, password: String): Result<User> {
         return try {
             val response = service.login(username = username, password = password)
-            if (response.succeeded) {
+            if (response.successful) {
                 Result.Success(response.data)
             } else {
                 Result.Error(response.errorCode, response.errorMsg)

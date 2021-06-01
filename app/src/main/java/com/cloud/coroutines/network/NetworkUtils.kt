@@ -8,7 +8,7 @@ import com.cloud.coroutines.data.Result
 suspend fun <T> safeApiCall(block: suspend () -> ApiResponse<T>): Result<T> {
     return try {
         val result = block.invoke()
-        if (result.succeeded) {
+        if (result.successful) {
             Result.Success(result.data)
         } else {
             Result.Error(result.errorCode, result.errorMsg)

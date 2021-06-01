@@ -5,7 +5,7 @@ data class ApiResponse<T>(
         val errorCode: Int = -1,
         val errorMsg: String = ""
 ) {
-    val succeeded
+    val successful
         get() = (SUCCESS_CODE == errorCode)
 
     companion object {
